@@ -1,0 +1,29 @@
+{
+  "name": "punydom",
+  "version": "0.0.1",
+  "description": "A puny attempt to provide DOM mocking",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArnaudBuchholz/punydom.git"
+  },
+  "keywords": [
+    "mock",
+    "DOM",
+    "typescript"
+  ],
+  "author": "Arnaud Buchholz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ArnaudBuchholz/punydom/issues"
+  },
+  "homepage": "https://github.com/ArnaudBuchholz/punydom#readme",
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "ts-standard": "^11.0.0",
+    "typescript": "^4.5.5"
+  }
+}
