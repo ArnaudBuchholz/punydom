@@ -1,6 +1,10 @@
-import { Window } from './Window'
+import {
+  Window,
+  Element,
+  NodeType
+} from './types'
 import { ClassList } from './ClassList'
-import { Node, NodeType } from './Node'
+import { NodeImpl } from './Node'
 
 function getNamespacePrefixAndBaseName (name: string): {
   namespacePrefix: string
@@ -23,7 +27,7 @@ function getNamespacePrefixAndBaseName (name: string): {
   }
 }
 
-export class Element extends Node {
+export class ElementImpl extends NodeImpl {
   private readonly _attributes: Record<string, string>
 
   constructor (
