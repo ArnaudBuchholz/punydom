@@ -1,4 +1,4 @@
-import { Settings } from './Settings'
+import { Settings } from './types'
 
 export class Console {
   constructor (
