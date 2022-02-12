@@ -1,14 +1,18 @@
-import { Settings } from './Settings'
-import { Window } from './Window'
-import { Element } from './Element'
-import { Node } from './Node'
+import {
+  Settings,
+  Window,
+  Document,
+  NodeType
+} from './types'
 
-class Document extends Element {
+import { ElementImpl } from './Element'
+
+export class DocumentImpl extends ElementImpl {
   constructor (
     private readonly _window: Window,
     private readonly _settings: Settings
   ) {
-    super(_window, undefined, Node.DOCUMENT_NODE)
+    super(_window, undefined, NodeType.DOCUMENT_NODE)
     const html = this.createElement('html')
     this.appendChild(html)
     const head = this.createElement('head')
@@ -18,11 +22,11 @@ class Document extends Element {
   }
 
   createComment (): Node {
-    return new Node(this._window, Node.COMMENT_NODE)
+    return new Node(this._window, NodeType.COMMENT_NODE)
   }
 
   createDocumentFragment (): Element {
-    return new Element(this._window, undefined, Node.DOCUMENT_FRAGMENT_NODE)
+    return new Element(this._window, undefined, NodeType.DOCUMENT_FRAGMENT_NODE)
   }
 
   createElement (name: string): Element {
@@ -38,7 +42,7 @@ class Document extends Element {
   }
 
   getElementById (id: string): Node | null {
-    return this._getSelfAndAllChildren().filter(node => node.nodeType === Node.ELEMENT_NODE && node.id === id)[0] || null
+    return this._getSelfAndAllChildren().filter(node => node.nodeType === NodeType.ELEMENT_NODE && node.id === id)[0] || null
   }
 
   get hidden (): boolean {
@@ -76,3 +80,5 @@ class Document extends Element {
   },
   set: () => false
 }))
+
+export interface DocumentImpl extends Document {}
