@@ -1,8 +1,8 @@
-import { IElement } from './types'
+import { Element } from './types'
 
 export class ClassList {
   constructor (
-    private readonly _element: IElement
+    private readonly _element: Element
   ) {}
 
   add (...classNames: string[]): void {
