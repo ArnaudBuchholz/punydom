@@ -3,6 +3,7 @@ import { NodeListImpl } from './NodeList'
 import {
   Window,
   Node,
+  NodeList,
   NodeType,
   impl
 } from './types'
@@ -29,46 +30,54 @@ export class NodeImpl extends EventTarget implements Node {
     return this._children
   }
 
-  _cloneNode (): NodeImpl {
+  _cloneNode (): Node {
     return new NodeImpl(this._window, this._nodeType)
   }
 
-  cloneNode (deep: boolean = false): NodeImpl {
+  cloneNode (deep: boolean = false): Node {
     const clone = this._cloneNode()
+    const cloneImpl: NodeImpl = impl(clone)
     if (deep) {
-      this._children.forEach((child: Node) => clone._children.push(child.cloneNode(true)))
+      this._children.forEach((child: Node) => cloneImpl._children.push(child.cloneNode(true)))
     }
     return clone
   }
 
-  get firstChild (): NodeImpl | null {
+  get firstChild (): Node | null {
     return this._children[0] ?? null
   }
 
-  _getSelfAndAllChildren () {
-    return this[$childNodes].reduce((result, child) => [...result, ...child._getSelfAndAllChildren()], [this])
+  _getSelfAndAllChildren (): NodeImpl[] {
+    return this._children
+      .map((node): NodeImpl => impl(node))
+      .reduce((result: NodeImpl[], node: NodeImpl): NodeImpl[] => [...result, ...node._getSelfAndAllChildren()], [this])
   }
 
-  get _hierarchy () {
-    const hierarchy = []
-    let node = this
-    while (node) {
+  get _hierarchy (): NodeImpl[] {
+    const hierarchy: NodeImpl[] = [this]
+    let node = this._parent
+    while (node !== null) {
       hierarchy.unshift(node)
-      node = node[$parent]
+      node = node._parent
     }
     return hierarchy
   }
 
-  insertBefore (node, refNode) {
-    node[$parent] = this
-    const pos = this[$childNodes].indexOf(refNode)
-    this[$childNodes].splice(pos, 0, node)
+  insertBefore (node: Node, refNode: Node): Node {
+    const nodeImpl: NodeImpl = impl(node)
+    if (nodeImpl._parent !== null) {
+      // TODO detach from parent
+    }
+    nodeImpl._parent = this
+    const pos = this._children.indexOf(refNode)
+    this._children.splice(pos, 0, node)
+    return node
   }
 
-  get lastChild () {
-    const length = this[$childNodes].length
-    if (length) {
-      return this[$childNodes][length - 1]
+  get lastChild (): Node | null {
+    const length = this._children.length
+    if (length !== 0) {
+      return this._children[length - 1]
     }
     return null
   }
