@@ -22,8 +22,24 @@
   },
   "homepage": "https://github.com/ArnaudBuchholz/punydom#readme",
   "devDependencies": {
+    "@types/jest": "^27.4.0",
     "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
     "ts-standard": "^11.0.0",
     "typescript": "^4.5.5"
+  },
+  "ts-standard": {
+    "env": [
+      "node",
+      "jest"
+    ],
+    "project": "./tsconfig.json",
+    "ignore": [
+      ".vscode/",
+      "./dist/"
+    ]
+  },
+  "jest": {
+    "preset": "ts-jest"
   }
 }
