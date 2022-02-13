@@ -7,11 +7,15 @@ export interface Document {
 }
 
 export interface Node {
+  appendChild: (node: Node) => Node
   childNodes: NodeList
   cloneNode: (deep?: boolean) => Node
+  firstChild: Node | null
+  insertBefore: (node: Node, refNode: Node) => Node
+  lastChild: Node | null
 }
 
-export interface NodeList extends Array<Node>{
+export interface NodeList extends Array<Node> {
   item: (index: number) => Node | null
 }
 
