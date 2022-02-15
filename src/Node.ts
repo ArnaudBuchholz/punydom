@@ -16,8 +16,8 @@ export class NodeImpl extends EventTarget implements Node {
   private _nodeValue: string = ''
 
   constructor (
-    private readonly _window: Window,
-    private readonly _nodeType: NodeType
+    protected readonly _window: Window,
+    protected readonly _nodeType: NodeType
   ) {
     super()
   }
@@ -33,7 +33,7 @@ export class NodeImpl extends EventTarget implements Node {
     return this._children
   }
 
-  _cloneNode (): Node {
+  protected _cloneNode (): Node {
     return new NodeImpl(this._window, this._nodeType)
   }
 
@@ -50,13 +50,13 @@ export class NodeImpl extends EventTarget implements Node {
     return this._children[0] ?? null
   }
 
-  _getSelfAndAllChildren (): NodeImpl[] {
+  protected _getSelfAndAllChildren (): NodeImpl[] {
     return this._children
       .map((node): NodeImpl => impl(node))
       .reduce((result: NodeImpl[], node: NodeImpl): NodeImpl[] => [...result, ...node._getSelfAndAllChildren()], [this])
   }
 
-  get _hierarchy (): NodeImpl[] {
+  protected get _hierarchy (): NodeImpl[] {
     const hierarchy: NodeImpl[] = [this]
     let node = this._parent
     while (node !== null) {
@@ -101,7 +101,7 @@ export class NodeImpl extends EventTarget implements Node {
     return this._nodeType
   }
 
-  _hasValue (): boolean {
+  protected get _hasValue (): boolean {
     return [
       NodeType.TEXT_NODE,
       NodeType.ATTRIBUTE_NODE,
@@ -111,14 +111,14 @@ export class NodeImpl extends EventTarget implements Node {
   }
 
   get nodeValue (): string | null {
-    if (this._hasValue()) {
+    if (this._hasValue) {
       return this._nodeValue
     }
     return null
   }
 
   set nodeValue (value: string | null) {
-    if (this._hasValue()) {
+    if (this._hasValue) {
       this._nodeValue = value ?? ''
     }
   }
@@ -155,11 +155,11 @@ export class NodeImpl extends EventTarget implements Node {
     return node
   }
 
-  _toHTML (): string {
+  protected _toHTML (): string {
     if (this._nodeType === NodeType.COMMENT_NODE) {
       return `<!--${this._nodeValue}-->`
     }
-    if (this._hasValue()) {
+    if (this._hasValue) {
       return this._nodeValue
     }
     return [
@@ -172,11 +172,11 @@ export class NodeImpl extends EventTarget implements Node {
     ].join('')
   }
 
-  _toHTMLClose (): string {
+  protected _toHTMLClose (): string {
     return ''
   }
 
-  _toHTMLOpen (): string {
+  protected _toHTMLOpen (): string {
     return ''
   }
 }
