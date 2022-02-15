@@ -1,9 +1,13 @@
 import {
   Window,
+  ClassList,
+  DOMRect,
   Element,
-  NodeType
+  NodeType,
+  Node,
+  impl
 } from './types'
-import { ClassList } from './ClassList'
+import { ClassListImpl } from './ClassList'
 import { NodeImpl } from './Node'
 
 function getNamespacePrefixAndBaseName (name: string): {
@@ -27,23 +31,22 @@ function getNamespacePrefixAndBaseName (name: string): {
   }
 }
 
-export class ElementImpl extends NodeImpl {
-  private readonly _attributes: Record<string, string>
+export class ElementImpl extends NodeImpl implements Element {
+  private readonly _attributes: Record<string, string> = {}
 
   constructor (
-    private readonly _window: Window,
-    private readonly _name: string = '',
-    private readonly _nodeType: NodeType = NodeType.ELEMENT_NODE
+    _window: Window,
+    _nodeType: NodeType = NodeType.ELEMENT_NODE,
+    private readonly _name: string = ''
   ) {
     super(_window, _nodeType)
-    this._attributes = {}
   }
 
-  private _classList!: ClassList
+  private _classList!: ClassListImpl
 
   get classList (): ClassList {
     if (this._classList === undefined) {
-      this._classList = new ClassList(this._window, this)
+      this._classList = new ClassListImpl(this)
     }
     return this._classList
   }
@@ -56,8 +59,8 @@ export class ElementImpl extends NodeImpl {
     this.setAttribute('class', value)
   }
 
-  protected _cloneNode (): Node {
-    const clone = new Element(this._window, this._name, this._nodeType)
+  protected _cloneNode (): NodeImpl {
+    const clone = new ElementImpl(this._window, this._nodeType, this._name)
     Object.assign(clone._attributes, this._attributes)
     return clone
   }
@@ -77,7 +80,7 @@ export class ElementImpl extends NodeImpl {
     return this._dataset
   }
 
-  getAttribute (name: string): string | undefined {
+  getAttribute (name: string): string | null {
     const attributes = this._attributes
     const value = attributes[name]
     if (value !== undefined) {
@@ -90,18 +93,10 @@ export class ElementImpl extends NodeImpl {
     if (pos !== -1) {
       return attributes[keys[pos]]
     }
+    return null
   }
 
-  getBoundingClientRect (): {
-    left: number
-    top: number
-    right: number
-    bottom: number
-    x: number
-    y: number
-    width: number
-    height: number
-  } {
+  getBoundingClientRect (): DOMRect {
     return {
       get left () { return 0 },
       get top () { return 0 },
@@ -116,8 +111,15 @@ export class ElementImpl extends NodeImpl {
 
   get innerHTML (): string {
     return this.childNodes
-      .map(node => node._toHTML())
+      .map((node: Node) => {
+        const nodeImpl: NodeImpl = impl(node)
+        return nodeImpl._toHTML()
+      })
       .join('')
+  }
+
+  set innerHTML (value: string) {
+    throw new Error('Not implemented')
   }
 
   get localName (): string {
