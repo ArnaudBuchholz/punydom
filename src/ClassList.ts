@@ -1,6 +1,9 @@
-import { Element } from './types'
+import {
+  ClassList,
+  Element
+} from './types'
 
-export class ClassList {
+export class ClassListImpl implements ClassList {
   constructor (
     private readonly _element: Element
   ) {}
@@ -14,7 +17,7 @@ export class ClassList {
   }
 
   get _classNames (): string {
-    return this._element.getAttribute('class')
+    return this._element.getAttribute('class') ?? ''
   }
 
   set _classNames (value: string) {
