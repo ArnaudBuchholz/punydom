@@ -38,8 +38,30 @@ export enum NodeType {
   DOCUMENT_FRAGMENT_NODE = 11
 }
 
+export interface ClassList {
+  add: (...classNames: string[]) => void
+  contains: (className: string) => boolean
+  remove: (...classNames: string[]) => void
+}
+
+export interface DOMRect {
+  left: number
+  top: number
+  right: number
+  bottom: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface Element {
-  getAttribute: (name: string) => string
+  classList: ClassList
+  className: string
+  dataset: object
+  getAttribute: (name: string) => string | null
+  getBoundingClientRect: () => DOMRect
+  innerHTML: string
   setAttribute: (name: string, value: string) => void
 }
 
