@@ -1,4 +1,5 @@
 export interface Window {
+  document: Document
   location: URL
 }
 
@@ -13,6 +14,13 @@ export interface Node {
   firstChild: Node | null
   insertBefore: (node: Node, refNode: Node) => Node
   lastChild: Node | null
+  nextSibling: Node | null
+  nodeType: NodeType
+  nodeValue: string | null
+  ownerDocument: Document | null
+  parentNode: Node | null
+  previousSibling: Node | null
+  removeChild: (node: Node) => Node
 }
 
 export interface NodeList extends Array<Node> {
