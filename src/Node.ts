@@ -1,7 +1,9 @@
 import { EventTarget } from './EventTarget'
 import { NodeListImpl } from './NodeList'
+import { DOMException } from './DOMException'
 import {
   Window,
+  Document,
   Node,
   NodeList,
   NodeType,
@@ -11,6 +13,7 @@ import {
 export class NodeImpl extends EventTarget implements Node {
   private _parent: NodeImpl | null = null
   private readonly _children: NodeListImpl = new NodeListImpl()
+  private _nodeValue: string = ''
 
   constructor (
     private readonly _window: Window,
@@ -82,65 +85,59 @@ export class NodeImpl extends EventTarget implements Node {
     return null
   }
 
-  get nextSibling () {
-    const parent = this[$parent]
-    if (parent) {
-      const parentChildren = parent[$childNodes]
+  get nextSibling (): Node | null {
+    const parent = this._parent
+    if (parent !== null) {
+      const parentChildren = parent._children
       const pos = parentChildren.indexOf(this) + 1
-      if (pos && pos < parentChildren.length) {
+      if (pos !== 0 && pos < parentChildren.length) {
         return parentChildren[pos]
       }
     }
     return null
   }
 
-  get nodeType () {
-    return this[$nodeType]
+  get nodeType (): NodeType {
+    return this._nodeType
   }
 
-  _hasValue () {
+  _hasValue (): boolean {
     return [
-      Node.TEXT_NODE,
-      Node.ATTRIBUTE_NODE,
-      Node.PROCESSING_INSTRUCTION_NODE,
-      Node.COMMENT_NODE
-    ].includes(this[$nodeType])
+      NodeType.TEXT_NODE,
+      NodeType.ATTRIBUTE_NODE,
+      NodeType.PROCESSING_INSTRUCTION_NODE,
+      NodeType.COMMENT_NODE
+    ].includes(this._nodeType)
   }
 
-  get nodeValue () {
+  get nodeValue (): string | null {
     if (this._hasValue()) {
-      return this[$nodeValue] || ''
+      return this._nodeValue
     }
     return null
   }
 
-  set nodeValue (value) {
+  set nodeValue (value: string | null) {
     if (this._hasValue()) {
-      this[$nodeValue] = value
+      this._nodeValue = value ?? ''
     }
   }
 
-  _onNewChild (node) {
-    if (this[$parent]) {
-      this[$parent]._onNewChild(node)
-    }
-  }
-
-  get ownerDocument () {
-    if (this[$window]) {
-      return this[$window].document
+  get ownerDocument (): Document | null {
+    if (this._window !== null) {
+      return this._window.document
     }
     return null
   }
 
-  get parentNode () {
-    return this[$parent] || null
+  get parentNode (): Node | null {
+    return this._parent ?? null
   }
 
-  get previousSibling () {
-    const parent = this[$parent]
-    if (parent) {
-      const parentChildren = parent[$childNodes]
+  get previousSibling (): Node | null {
+    const parent = this._parent
+    if (parent !== null) {
+      const parentChildren = parent._children
       const pos = parentChildren.indexOf(this) - 1
       if (pos >= 0) {
         return parentChildren[pos]
@@ -149,36 +146,37 @@ export class NodeImpl extends EventTarget implements Node {
     return null
   }
 
-  removeChild (node) {
-    const pos = this[$childNodes].indexOf(node)
-    if (pos !== -1) {
-      this[$childNodes].splice(pos, 1)
+  removeChild (node: Node): Node {
+    const pos = this._children.indexOf(node)
+    if (pos === -1) {
+      throw new DOMException('NotFoundError')
     }
+    this._children.splice(pos, 1)
+    return node
   }
 
-  _toHTML () {
-    if (this[$nodeType] === Node.COMMENT_NODE) {
-      return `<!--${this[$nodeValue]}-->`
+  _toHTML (): string {
+    if (this._nodeType === NodeType.COMMENT_NODE) {
+      return `<!--${this._nodeValue}-->`
     }
     if (this._hasValue()) {
-      return this[$nodeValue]
+      return this._nodeValue
     }
     return [
       this._toHTMLOpen(),
-      ...this[$childNodes].map(node => node._toHTML()),
+      ...this._children.map((node: Node) => {
+        const nodeImpl: NodeImpl = impl(node)
+        return nodeImpl._toHTML()
+      }),
       this._toHTMLClose()
     ].join('')
   }
 
-  _toHTMLClose () {}
-
-  _toHTMLOpen () {}
-
-  get value () {
-    return this.nodeValue
+  _toHTMLClose (): string {
+    return ''
   }
 
-  set value (value) {
-    this.nodeValue = value
+  _toHTMLOpen (): string {
+    return ''
   }
 }
