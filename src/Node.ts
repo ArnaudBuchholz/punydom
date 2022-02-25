@@ -1,19 +1,29 @@
 import { EventTarget } from './EventTarget'
 import { NodeListImpl } from './NodeList'
 import { DOMException } from './DOMException'
+import { WindowImpl } from './Window'
 import {
   Window,
   Document,
   Node,
   NodeList,
   NodeType,
+  PunyDOMSettings,
+  DEFAULT_SETTINGS,
   impl
 } from './types'
 
 export class NodeImpl extends EventTarget implements Node {
   private _parent: NodeImpl | null = null
-  private readonly _children: NodeListImpl = new NodeListImpl()
+  private readonly _children: NodeListImpl<Node> = new NodeListImpl<Node>()
   private _nodeValue: string = ''
+
+  protected get punyDOMSettings (): PunyDOMSettings {
+    if (this._window instanceof WindowImpl) {
+      return this._window.punyDOMSettings
+    }
+    return DEFAULT_SETTINGS
+  }
 
   constructor (
     protected readonly _window: Window,
@@ -29,7 +39,7 @@ export class NodeImpl extends EventTarget implements Node {
     return node
   }
 
-  get childNodes (): NodeList {
+  get childNodes (): NodeList<Node> {
     return this._children
   }
 
@@ -155,7 +165,7 @@ export class NodeImpl extends EventTarget implements Node {
     return node
   }
 
-  protected _toHTML (): string {
+  _toHTML (): string {
     if (this._nodeType === NodeType.COMMENT_NODE) {
       return `<!--${this._nodeValue}-->`
     }
@@ -172,11 +182,11 @@ export class NodeImpl extends EventTarget implements Node {
     ].join('')
   }
 
-  protected _toHTMLClose (): string {
+  protected _toHTMLOpen (): string {
     return ''
   }
 
-  protected _toHTMLOpen (): string {
+  protected _toHTMLClose (): string {
     return ''
   }
 }
