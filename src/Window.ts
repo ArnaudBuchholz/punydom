@@ -1,6 +1,7 @@
 import {
-  IWindow,
-  Settings
+  Window,
+  PunyDOMSettings,
+  DEFAULT_SETTINGS
 } from './types'
 import { Document } from './Document'
 import { DOMParser } from './DOMParser'
@@ -8,7 +9,7 @@ import { EventTarget } from './EventTarget'
 import { FormData } from './FormData'
 import { Node } from './Node'
 
-export class Window extends EventTarget implements IWindow {
+export class WindowImpl extends EventTarget implements Window {
   get Document (): Function {
     return Document
   }
@@ -33,8 +34,12 @@ export class Window extends EventTarget implements IWindow {
     return URL
   }
 
+  get punyDOMSettings (): PunyDOMSettings {
+    return this._settings
+  }
+
   constructor (
-    private readonly _settings: Settings
+    private readonly _settings: PunyDOMSettings = DEFAULT_SETTINGS
   ) {
     super()
     this._location = new URL(this._settings.baseURL)
