@@ -1,3 +1,5 @@
+export const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
+
 export interface Window {
   document: Document
   location: URL
@@ -9,7 +11,7 @@ export interface Document {
 
 export interface Node {
   appendChild: (node: Node) => Node
-  childNodes: NodeList
+  childNodes: NodeList<Node>
   cloneNode: (deep?: boolean) => Node
   firstChild: Node | null
   insertBefore: (node: Node, refNode: Node) => Node
@@ -23,8 +25,8 @@ export interface Node {
   removeChild: (node: Node) => Node
 }
 
-export interface NodeList extends Array<Node> {
-  item: (index: number) => Node | null
+export interface NodeList<T> extends Array<T> {
+  item: (index: number) => T | null
 }
 
 export enum NodeType {
@@ -62,6 +64,11 @@ export interface Element {
   getAttribute: (name: string) => string | null
   getBoundingClientRect: () => DOMRect
   innerHTML: string
+  readonly localName: string
+  readonly namespaceURI: string
+  readonly nodeName: string
+  querySelector: (selector: string) => Element | null
+  querySelectorAll: (selector: string) => NodeList<Element>
   setAttribute: (name: string, value: string) => void
 }
 
@@ -69,11 +76,17 @@ export interface Event {
   type: string
 }
 
-export interface Settings {
+export interface PunyDOMSettings {
   baseURL: string
   userAgent?: string
   platform?: string
-  querySelectorAll?: (root: Node, selector: string) => Node[]
+  querySelectorAll?: (root: Element, selector: string) => Element[]
+}
+
+export const DEFAULT_SETTINGS: PunyDOMSettings = {
+  baseURL: 'http://localhost',
+  userAgent: 'simulated',
+  platform: 'simulated'
 }
 
 export function impl<T, I> (obj: T): I {
