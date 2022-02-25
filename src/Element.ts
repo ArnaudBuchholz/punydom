@@ -1,14 +1,20 @@
 import {
+  XHTML_NAMESPACE,
   Window,
   ClassList,
   DOMRect,
   Element,
   NodeType,
   Node,
+  NodeList,
   impl
 } from './types'
 import { ClassListImpl } from './ClassList'
 import { NodeImpl } from './Node'
+import { NodeListImpl } from './NodeList'
+
+type Attributes = Record<string, string>
+type NamespacePrefixes = Record<string, string>
 
 function getNamespacePrefixAndBaseName (name: string): {
   namespacePrefix: string
@@ -32,7 +38,7 @@ function getNamespacePrefixAndBaseName (name: string): {
 }
 
 export class ElementImpl extends NodeImpl implements Element {
-  private readonly _attributes: Record<string, string> = {}
+  private readonly _attributes: Attributes = {}
 
   constructor (
     _window: Window,
@@ -87,11 +93,11 @@ export class ElementImpl extends NodeImpl implements Element {
       return value
     }
     // case insensitive version
-    const keys = Object.keys(attributes)
-    const lowerKeys = keys.map(key => key.toLowerCase())
-    const pos = lowerKeys.indexOf(name.toLowerCase())
-    if (pos !== -1) {
-      return attributes[keys[pos]]
+    const lowerName = name.toLowerCase()
+    const attName = Object.keys(attributes)
+      .find(key => key.toLowerCase() === lowerName)
+    if (attName !== undefined) {
+      return attributes[attName]
     }
     return null
   }
@@ -123,25 +129,28 @@ export class ElementImpl extends NodeImpl implements Element {
   }
 
   get localName (): string {
-    return getNamespacePrefixAndBaseName(this[$name]).baseName
+    return getNamespacePrefixAndBaseName(this._name).baseName
   }
 
-  get _namespacePrefixes () {
+  get _namespacePrefixes (): NamespacePrefixes {
     const namespacePrefix = 'xmlns:'
     const namespaceAttribute = 'xmlns'
     return this._hierarchy
-      .map(node => {
-        const attributes = node[$attributes] || {}
-        return Object.keys(attributes)
-          .filter(name => name.startsWith(namespacePrefix) || name === namespaceAttribute)
-          .reduce((prefixes, name) => {
-            if (name === namespaceAttribute) {
-              prefixes[''] = attributes[name]
-            } else {
-              prefixes[name.substring(namespacePrefix.length)] = attributes[name]
-            }
-            return prefixes
-          }, {})
+      .map((node: NodeImpl): NamespacePrefixes => {
+        if (node instanceof ElementImpl) {
+          const attributes = node._attributes
+          return Object.keys(attributes)
+            .filter(name => name.startsWith(namespacePrefix) || name === namespaceAttribute)
+            .reduce((prefixes: NamespacePrefixes, name: string): NamespacePrefixes => {
+              if (name === namespaceAttribute) {
+                prefixes[''] = attributes[name]
+              } else {
+                prefixes[name.substring(namespacePrefix.length)] = attributes[name]
+              }
+              return prefixes
+            }, {})
+        }
+        return {}
       })
       .reduce((consolidated, dictionary) => {
         return { ...consolidated, ...dictionary }
@@ -159,18 +168,17 @@ export class ElementImpl extends NodeImpl implements Element {
     return this._name
   }
 
-  querySelector (selector) {
-    if (selector === 'SCRIPT[src][id=sap-ui-bootstrap]') {
-      return this._getSelfAndAllChildren()
-        .filter(node => node[$nodeType] === Node.ELEMENT_NODE &&
-                        node.getAttribute('src') &&
-                        node.id === 'sap-ui-bootstrap')[0] || null
-    }
-    return null
+  querySelector (selector: string): Element | null {
+    return this.querySelectorAll(selector)[0] ?? null
   }
 
-  querySelectorAll () {
-    return []
+  querySelectorAll (selector: string): NodeList<Element> {
+    const nodeList = new NodeListImpl<Element>()
+    if (this.punyDOMSettings.querySelectorAll !== undefined) {
+      const elements = this.punyDOMSettings.querySelectorAll(this, selector)
+      nodeList.push(...elements)
+    }
+    return nodeList
   }
 
   setAttribute (name, value) {
@@ -201,13 +209,13 @@ export class ElementImpl extends NodeImpl implements Element {
     }
   }
 
-  _toHTMLClose () {
-    return `</${this[$name]}>`
-  }
-
-  _toHTMLOpen () {
+  protected _toHTMLOpen (): string {
     const attributes = this[$attributes]
     return `<${this[$name]}${Object.keys(attributes).map(name => ` ${name}="${attributes[name]}"`).join('')}>`
+  }
+
+  protected _toHTMLClose (): string {
+    return `</${this._name}>`
   }
 }
 
