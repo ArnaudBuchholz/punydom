@@ -1,10 +1,9 @@
 import {
-  NodeList,
-  Node
+  NodeList
 } from './types'
 
-export class NodeListImpl extends Array<Node> implements NodeList {
-  item (index: number): Node | null {
+export class NodeListImpl<T> extends Array<T> implements NodeList<T> {
+  item (index: number): T | null {
     return this[index] ?? null
   }
 }
