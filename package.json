@@ -4,6 +4,7 @@
   "description": "A puny attempt to provide DOM mocking",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "repository": {
