@@ -1,18 +1,18 @@
 import {
-  Settings,
   Window,
   Document,
-  NodeType
+  Node,
+  NodeType,
+  Element
 } from './types'
-
+import { NodeImpl } from './Node'
 import { ElementImpl } from './Element'
 
 export class DocumentImpl extends ElementImpl {
   constructor (
-    private readonly _window: Window,
-    private readonly _settings: Settings
+    _window: Window
   ) {
-    super(_window, undefined, NodeType.DOCUMENT_NODE)
+    super(_window, NodeType.DOCUMENT_NODE)
     const html = this.createElement('html')
     this.appendChild(html)
     const head = this.createElement('head')
@@ -22,15 +22,15 @@ export class DocumentImpl extends ElementImpl {
   }
 
   createComment (): Node {
-    return new Node(this._window, NodeType.COMMENT_NODE)
+    return new NodeImpl(this._window, NodeType.COMMENT_NODE)
   }
 
   createDocumentFragment (): Element {
-    return new Element(this._window, undefined, NodeType.DOCUMENT_FRAGMENT_NODE)
+    return new ElementImpl(this._window, NodeType.DOCUMENT_FRAGMENT_NODE)
   }
 
   createElement (name: string): Element {
-    return new Element(this._window, name)
+    return new ElementImpl(this._window, NodeType.ELEMENT_NODE, name)
   }
 
   get defaultView (): Window {
@@ -41,20 +41,17 @@ export class DocumentImpl extends ElementImpl {
     return this
   }
 
-  getElementById (id: string): Node | null {
-    return this._getSelfAndAllChildren().filter(node => node.nodeType === NodeType.ELEMENT_NODE && node.id === id)[0] || null
+  getElementById (id: string): Element | null {
+    const nodeImpl = this._getSelfAndAllChildren()
+      .find(node => node.isElement() && node.id === id)
+    if (nodeImpl !== undefined) {
+      return nodeImpl.asElement()
+    }
+    return null
   }
 
   get hidden (): boolean {
     return true
-  }
-
-  get implementation (): unknown {
-    return {
-      createHTMLDocument: () => {
-        return new Document(this._window, this._settings)
-      }
-    }
   }
 
   get location (): URL {
@@ -70,15 +67,13 @@ export class DocumentImpl extends ElementImpl {
   }
 }
 
-// Shortcuts to elements
 [
-  'body',
-  'head'
+  'head',
+  'body'
 ].forEach(name => Object.defineProperty(Document.prototype, name, {
   get: function () {
     return this.getElementsByTagName(name)[0]
-  },
-  set: () => false
+  }
 }))
 
 export interface DocumentImpl extends Document {}
