@@ -5,23 +5,19 @@ export interface Window {
   location: URL
 }
 
-export interface Document {
-
-}
-
 export interface Node {
   appendChild: (node: Node) => Node
-  childNodes: NodeList<Node>
+  readonly childNodes: NodeList<Node>
   cloneNode: (deep?: boolean) => Node
-  firstChild: Node | null
+  readonly firstChild: Node | null
   insertBefore: (node: Node, refNode: Node) => Node
-  lastChild: Node | null
-  nextSibling: Node | null
-  nodeType: NodeType
+  readonly lastChild: Node | null
+  readonly nextSibling: Node | null
+  readonly nodeType: NodeType
   nodeValue: string | null
-  ownerDocument: Document | null
-  parentNode: Node | null
-  previousSibling: Node | null
+  readonly ownerDocument: Document | null
+  readonly parentNode: Node | null
+  readonly previousSibling: Node | null
   removeChild: (node: Node) => Node
 }
 
@@ -57,10 +53,10 @@ export interface DOMRect {
   height: number
 }
 
-export interface Element {
-  classList: ClassList
+export interface Element extends Node {
+  readonly classList: ClassList
   className: string
-  dataset: object
+  readonly dataset: object
   getAttribute: (name: string) => string | null
   getBoundingClientRect: () => DOMRect
   innerHTML: string
@@ -70,6 +66,26 @@ export interface Element {
   querySelector: (selector: string) => Element | null
   querySelectorAll: (selector: string) => NodeList<Element>
   setAttribute: (name: string, value: string) => void
+  readonly tagName: string
+  textContent: string
+  id: string
+  style: string
+  href: string
+  src: string
+}
+
+export interface Document extends Element {
+  createComment: () => Node
+  createDocumentFragment: () => Element
+  createElement: (name: string) => Element
+  readonly defaultView: Window
+  readonly documentElement: Document
+  getElementById: (id: string) => Element | null
+  readonly hidden: boolean
+  readonly location: URL
+  readonly readyState: string
+  readonly head: Element
+  readonly body: Element
 }
 
 export interface Event {
