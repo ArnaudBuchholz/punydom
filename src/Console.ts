@@ -1,8 +1,8 @@
-import { Settings } from './types'
+import { PunyDOMSettings } from './types'
 
 export class Console {
   constructor (
-    private readonly _settings: Settings
+    private readonly _settings: PunyDOMSettings
   ) {}
 
   log (...params: any[]): void {
