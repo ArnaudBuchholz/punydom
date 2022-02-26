@@ -37,7 +37,7 @@ function getNamespacePrefixAndBaseName (name: string): {
   }
 }
 
-export class ElementImpl extends NodeImpl implements Element {
+export class ElementImpl extends NodeImpl {
   private readonly _attributes: Attributes = {}
 
   constructor (
@@ -87,17 +87,11 @@ export class ElementImpl extends NodeImpl implements Element {
   }
 
   getAttribute (name: string): string | null {
-    const attributes = this._attributes
-    const value = attributes[name]
-    if (value !== undefined) {
-      return value
-    }
-    // case insensitive version
     const lowerName = name.toLowerCase()
-    const attName = Object.keys(attributes)
+    const attName = Object.keys(this._attributes)
       .find(key => key.toLowerCase() === lowerName)
     if (attName !== undefined) {
-      return attributes[attName]
+      return this._attributes[attName]
     }
     return null
   }
@@ -181,37 +175,32 @@ export class ElementImpl extends NodeImpl implements Element {
     return nodeList
   }
 
-  setAttribute (name, value) {
-    this[$attributes][name] = value.toString()
+  setAttribute (name: string, value: string): void {
+    this._attributes[name.toLocaleLowerCase()] = value.toString()
   }
 
-  get style () {
-    return this[$style]
+  get tagName (): string {
+    return this._name
   }
 
-  get tagName () {
-    return this[$name]
-  }
-
-  get textContent () {
+  get textContent (): string {
     return this._getSelfAndAllChildren()
-      .filter(node => node[$nodeType] === Node.TEXT_NODE)
+      .filter(node => node.nodeType === NodeType.TEXT_NODE)
       .map(node => node.nodeValue)
       .join('')
   }
 
-  set textContent (value) {
-    this._clearChildren()
-    if (value) {
-      const text = new Node(this[$window], Node.TEXT_NODE)
+  set textContent (value: string) {
+    this._children.length = 0
+    if (value !== '') {
+      const text = new NodeImpl(this._window, NodeType.TEXT_NODE)
       text.nodeValue = value
       this.appendChild(text)
     }
   }
 
   protected _toHTMLOpen (): string {
-    const attributes = this[$attributes]
-    return `<${this[$name]}${Object.keys(attributes).map(name => ` ${name}="${attributes[name]}"`).join('')}>`
+    return `<${this._name}${Object.keys(this._attributes).map(name => ` ${name}="${this._attributes[name]}"`).join('')}>`
   }
 
   protected _toHTMLClose (): string {
@@ -219,25 +208,20 @@ export class ElementImpl extends NodeImpl implements Element {
   }
 }
 
-// Map some attributes directly as properties
 [
-  'href',
   'id',
+  'style',
+  'href',
   'src'
 ].forEach(name => {
   Object.defineProperty(Element.prototype, name, {
-    get: function () {
+    get: function (): string {
       return this.getAttribute(name)
     },
-    set: function (value) {
+    set: function (value: string): void {
       this.setAttribute(name, value)
     }
   })
 })
 
-
-const someProxy = new Proxy({}, {
-  get(target: object, prop: sring | number | symbol) {
-    return target[prop];
-  }
-});
+export interface ElementImpl extends Element {}
