@@ -4,10 +4,11 @@ import { DOMException } from './DOMException'
 import { WindowImpl } from './Window'
 import {
   Window,
-  Document,
   Node,
   NodeList,
   NodeType,
+  Element,
+  Document,
   PunyDOMSettings,
   DEFAULT_SETTINGS,
   impl
@@ -15,7 +16,7 @@ import {
 
 export class NodeImpl extends EventTarget implements Node {
   private _parent: NodeImpl | null = null
-  private readonly _children: NodeListImpl<Node> = new NodeListImpl<Node>()
+  protected readonly _children: NodeListImpl<Node> = new NodeListImpl<Node>()
   private _nodeValue: string = ''
 
   protected get punyDOMSettings (): PunyDOMSettings {
@@ -23,6 +24,28 @@ export class NodeImpl extends EventTarget implements Node {
       return this._window.punyDOMSettings
     }
     return DEFAULT_SETTINGS
+  }
+
+  isElement (): this is Element {
+    return this._nodeType === NodeType.ELEMENT_NODE
+  }
+
+  asElement (): Element {
+    if (!this.isElement()) {
+      throw new Error('Node is not an Element')
+    }
+    return this
+  }
+
+  isDocument (): this is Document {
+    return this._nodeType === NodeType.DOCUMENT_NODE
+  }
+
+  asDocument (): Document {
+    if (!this.isDocument()) {
+      throw new Error('Node is not an Element')
+    }
+    return this
   }
 
   constructor (
