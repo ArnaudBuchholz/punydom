@@ -1,8 +1,29 @@
 export const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 
+export interface Navigator {
+  userAgent: string
+  platform: string
+}
+
+export interface Console {
+  log: (...args: any[]) => void
+  warn: (...args: any[]) => void
+  error: (...args: any[]) => void
+}
+
 export interface Window {
+  console: Console
   document: Document
+  eval: (code: string) => any
   location: URL
+  navigator: Navigator
+  readonly parent: Window | null
+  readonly self: Window
+  readonly top: Window
+  setTimeout: (callback: Function, delay: number) => number
+  clearTimeout: (timeoutId: number) => void
+  setInterval: (callback: Function, delay: number) => number
+  clearInterval: (intervalId: number) => void
 }
 
 export interface Node {
@@ -100,9 +121,7 @@ export interface PunyDOMSettings {
 }
 
 export const DEFAULT_SETTINGS: PunyDOMSettings = {
-  baseURL: 'http://localhost',
-  userAgent: 'simulated',
-  platform: 'simulated'
+  baseURL: 'http://localhost'
 }
 
 export function impl<T, I> (obj: T): I {
