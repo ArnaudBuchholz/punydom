@@ -1,39 +1,12 @@
 import {
+  Navigator,
   Window,
   PunyDOMSettings,
   DEFAULT_SETTINGS
 } from './types'
-import { Document } from './Document'
-import { DOMParser } from './DOMParser'
 import { EventTarget } from './EventTarget'
-import { FormData } from './FormData'
-import { Node } from './Node'
 
 export class WindowImpl extends EventTarget implements Window {
-  get Document (): Function {
-    return Document
-  }
-
-  get DOMParser (): Function {
-    return DOMParser
-  }
-
-  get FormData (): Function {
-    return FormData
-  }
-
-  get JSON (): JSON {
-    return JSON
-  }
-
-  get Node (): Function {
-    return Node
-  }
-
-  get URL (): Function {
-    return URL
-  }
-
   get punyDOMSettings (): PunyDOMSettings {
     return this._settings
   }
@@ -56,12 +29,10 @@ export class WindowImpl extends EventTarget implements Window {
       return false
     }
     try {
-      securedContext.call(this, this, this) // global also set to window because of sinon
+      return securedContext.call(this, this, this) // global also set to window because of sinon
     } catch (e) {
       console.error(e)
-      return false
     }
-    return true
   }
 
   private _location: URL
@@ -78,19 +49,11 @@ export class WindowImpl extends EventTarget implements Window {
     return this._location
   }
 
-  get navigator (): { userAgent: string, platform: string } {
+  get navigator (): Navigator {
     return {
-      userAgent: this._settings.userAgent ?? 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.2 (KHTML, like Gecko) Chrome/22.0.1216.0 Safari/537.2',
-      platform: this._settings.platform ?? 'Node.js'
+      userAgent: this._settings.userAgent ?? 'PunyDOM',
+      platform: this._settings.platform ?? 'PunyDOM'
     }
-  }
-
-  get pageXOffset (): number {
-    return 0
-  }
-
-  get pageYOffset (): number {
-    return 0
   }
 
   get parent (): Window | null {
@@ -109,38 +72,27 @@ export class WindowImpl extends EventTarget implements Window {
   }
 }
 
-// Members allocated when requested
 const dynamicMembers = [{
   name: 'console',
-  symbol: $console,
   Class: require('./Console')
 }, {
   name: 'document',
-  symbol: $document,
-  Class: Document
-}, {
-  name: 'history',
-  symbol: $history,
-  Class: require('./History')
-}, {
-  name: 'localStorage',
-  symbol: $localStorage,
-  Class: require('./LocalStorage')
+  Class: require('./Document')
 }]
 
 dynamicMembers.forEach(member => {
+  const storage = `_${member.name}`
   Object.defineProperty(Window.prototype, member.name, {
     get: function () {
-      if (!this[member.symbol]) {
-        this[member.symbol] = new member.Class(this)
+      if (this[storage] === undefined) {
+        this[storage] = new member.Class(this)
       }
-      return this[member.symbol]
+      return this[storage]
     },
     set: () => false
   })
 })
 
-// Overridable members
 const overridableMembers = [{
   name: 'setTimeout',
   initial: setTimeout
@@ -156,18 +108,18 @@ const overridableMembers = [{
 }]
 
 overridableMembers.forEach(member => {
-  const symbol = Symbol(member.name)
+  const storage = `_${member.name}`
   Object.defineProperty(Window.prototype, member.name, {
     get: function () {
-      if (!this[symbol]) {
-        this[symbol] = member.initial
+      if (this[storage] === undefined) {
+        this[storage] = member.initial
       }
-      return this[symbol]
+      return this[storage]
     },
     set: function (value) {
-      this[symbol] = value
+      this[storage] = value
     }
   })
 })
 
-module.exports = Window
+export interface WindowImpl extends Window {}
