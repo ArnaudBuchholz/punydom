@@ -1,8 +1,11 @@
-import { PunyDOMSettings } from './types'
+import {
+  Console,
+  Window
+} from './types'
 
-export class Console {
+export class ConsoleImpl implements Console {
   constructor (
-    private readonly _settings: PunyDOMSettings
+    protected readonly _window: Window
   ) {}
 
   log (...params: any[]): void {
