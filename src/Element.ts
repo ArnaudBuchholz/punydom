@@ -214,7 +214,7 @@ export class ElementImpl extends NodeImpl {
   'href',
   'src'
 ].forEach(name => {
-  Object.defineProperty(Element.prototype, name, {
+  Object.defineProperty(ElementImpl.prototype, name, {
     get: function (): string {
       return this.getAttribute(name)
     },
