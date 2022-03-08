@@ -70,7 +70,7 @@ export class DocumentImpl extends ElementImpl {
 [
   'head',
   'body'
-].forEach(name => Object.defineProperty(Document.prototype, name, {
+].forEach(name => Object.defineProperty(DocumentImpl.prototype, name, {
   get: function () {
     return this.getElementsByTagName(name)[0]
   }
