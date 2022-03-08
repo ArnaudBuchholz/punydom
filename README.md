@@ -6,6 +6,6 @@ A puny attempt to provide DOM mocking
 ```javascript
 import PunyDOM from 'punydom'
 const { window } = new PunyDOM({
-  baseURL
+  baseURL: 'http://localhost'
 })
 ```
