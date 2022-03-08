@@ -82,7 +82,7 @@ const dynamicMembers = [{
 
 dynamicMembers.forEach(member => {
   const storage = `_${member.name}`
-  Object.defineProperty(Window.prototype, member.name, {
+  Object.defineProperty(WindowImpl.prototype, member.name, {
     get: function () {
       if (this[storage] === undefined) {
         this[storage] = new member.Class(this)
@@ -109,7 +109,7 @@ const overridableMembers = [{
 
 overridableMembers.forEach(member => {
   const storage = `_${member.name}`
-  Object.defineProperty(Window.prototype, member.name, {
+  Object.defineProperty(WindowImpl.prototype, member.name, {
     get: function () {
       if (this[storage] === undefined) {
         this[storage] = member.initial
