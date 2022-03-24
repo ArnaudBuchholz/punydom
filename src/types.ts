@@ -105,8 +105,8 @@ export interface Document extends Element {
   readonly hidden: boolean
   readonly location: URL
   readonly readyState: string
-  readonly head: Element
-  readonly body: Element
+  readonly head: Element | null
+  readonly body: Element | null
 }
 
 export interface Event {
