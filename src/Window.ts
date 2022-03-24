@@ -5,6 +5,8 @@ import {
   DEFAULT_SETTINGS
 } from './types'
 import { EventTarget } from './EventTarget'
+import { ConsoleImpl } from './Console'
+import { DocumentImpl } from './Document'
 
 export class WindowImpl extends EventTarget implements Window {
   get punyDOMSettings (): PunyDOMSettings {
@@ -74,52 +76,31 @@ export class WindowImpl extends EventTarget implements Window {
 
 const dynamicMembers = [{
   name: 'console',
-  Class: require('./Console')
+  symbol: Symbol('console'),
+  Class: ConsoleImpl
 }, {
   name: 'document',
-  Class: require('./Document')
+  symbol: Symbol('document'),
+  Class: DocumentImpl
 }]
 
 dynamicMembers.forEach(member => {
-  const storage = `_${member.name}`
   Object.defineProperty(WindowImpl.prototype, member.name, {
     get: function () {
-      if (this[storage] === undefined) {
-        this[storage] = new member.Class(this)
+      if (this[member.symbol] === undefined) {
+        this[member.symbol] = new member.Class(this)
       }
-      return this[storage]
+      return this[member.symbol]
     },
     set: () => false
   })
 })
 
-const overridableMembers = [{
-  name: 'setTimeout',
-  initial: setTimeout
-}, {
-  name: 'clearTimeout',
-  initial: clearTimeout
-}, {
-  name: 'setInterval',
-  initial: setInterval
-}, {
-  name: 'clearInterval',
-  initial: clearInterval
-}]
-
-overridableMembers.forEach(member => {
-  const storage = `_${member.name}`
-  Object.defineProperty(WindowImpl.prototype, member.name, {
-    get: function () {
-      if (this[storage] === undefined) {
-        this[storage] = member.initial
-      }
-      return this[storage]
-    },
-    set: function (value) {
-      this[storage] = value
-    }
-  })
+Object.assign(WindowImpl.prototype, {
+  setTimeout,
+  clearTimeout,
+  setInterval,
+  clearInterval
 })
 
 export interface WindowImpl extends Window {}
