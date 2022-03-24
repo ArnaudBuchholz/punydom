@@ -2,11 +2,17 @@ import {
   Window,
   Document,
   Node,
+  NodeList,
   NodeType,
   Element
 } from './types'
 import { NodeImpl } from './Node'
 import { ElementImpl } from './Element'
+
+function elementByTagName (nodes: NodeList<Node>, localName: string): Element | null {
+  const elements: Element[] = nodes.filter(node => node.nodeType === NodeType.ELEMENT_NODE) as Element[]
+  return elements.find(element => element.localName === localName) ?? null
+}
 
 export class DocumentImpl extends ElementImpl {
   constructor (
@@ -19,6 +25,14 @@ export class DocumentImpl extends ElementImpl {
     html.appendChild(head)
     const body = this.createElement('body')
     html.appendChild(body)
+  }
+
+  get body (): Element | null {
+    const html = elementByTagName(this.childNodes, 'html')
+    if (html !== null) {
+      return elementByTagName(html.childNodes, 'body')
+    }
+    return null
   }
 
   createComment (): Node {
@@ -50,6 +64,14 @@ export class DocumentImpl extends ElementImpl {
     return null
   }
 
+  get head (): Element | null {
+    const html = elementByTagName(this.childNodes, 'html')
+    if (html !== null) {
+      return elementByTagName(html.childNodes, 'body')
+    }
+    return null
+  }
+
   get hidden (): boolean {
     return true
   }
@@ -66,14 +88,5 @@ export class DocumentImpl extends ElementImpl {
     return 'complete'
   }
 }
-
-[
-  'head',
-  'body'
-].forEach(name => Object.defineProperty(DocumentImpl.prototype, name, {
-  get: function () {
-    return this.getElementsByTagName(name)[0]
-  }
-}))
 
 export interface DocumentImpl extends Document {}
