@@ -2,7 +2,9 @@
   "name": "punydom",
   "version": "0.0.1",
   "description": "A puny attempt to provide DOM mocking",
-  "main": "index.js",
+  "main": "dist/PunyDOM.js",
+  "types": "dist/PunyDOM.d.ts",
+  "files": [ "dist/*.js" ],
   "scripts": {
     "build": "tsc --project tsconfig-build.json",
     "test": "jest"
